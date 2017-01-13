@@ -117,7 +117,6 @@ def build_parents_list(terminal, root):
         raise Error('cannot find terminal')
     return parents_lst
 
-
 def redraw(component):
     if maker.isinstance(component, 'Container'):
         children = component.get_children()
@@ -128,6 +127,9 @@ def redraw(component):
         raise Error('wrong component type (not Terminal or Container)')
     terminal = component
     widget = terminal.vte
+    widget.set_colors(terminal.fgcolor_inactive, terminal.bgcolor,
+                        terminal.palette_inactive)
+    terminal.set_cursor_color()
     alloc = widget.get_allocation()
     widget.queue_draw_area(0, 0, alloc.width, alloc.height)
 
@@ -141,39 +143,10 @@ def draw_as_selected(component):
         raise Error('wrong component type (not Terminal or Container)')
     terminal = component
     widget = terminal.vte
-    if terminal.config['use_theme_colors']:
-        color = terminal.vte.get_style().text[gtk.STATE_NORMAL]
-    else:
-        color = gtk.gdk.color_parse(terminal.config['foreground_color'])
+    widget.set_colors(terminal.bgcolor, terminal.fgcolor_inactive,
+                        terminal.palette_inactive)
     alloc = widget.get_allocation()
-    topleft = (0, 0)
-    topright = (alloc.width, 0)
-    bottomleft = (0, alloc.height)
-    bottomright = (alloc.width, alloc.height)
-    coord = (topleft, topright, bottomright, bottomleft)
-    #here, we define some widget internal values
-    widget._draw_data = { 'color': color, 'coord' : coord }
     #redraw by forcing an event
-    def on_expose_event(widget, _event):
-        """Handle an expose event while dragging"""
-        if not widget._draw_data:
-            return(False)
-
-        context = widget.window.cairo_create()
-        color = widget._draw_data['color']
-        coord = widget._draw_data['coord']
-
-        context.set_source_rgba(color.red, color.green, color.blue, 0.5)
-        if len(coord) > 0 :
-            context.move_to(coord[len(coord)-1][0], coord[len(coord)-1][1])
-            for i in coord:
-                context.line_to(i[0], i[1])
-
-        context.fill()
-        return(False)
-    connec = widget.connect_after('expose-event', on_expose_event)
     widget.queue_draw_area(0, 0, alloc.width, alloc.height)
     widget.get_window().process_updates(True)
-    #finaly reset the values
-    widget.disconnect(connec)
-    widget._draw_data = None
+
