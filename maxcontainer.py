@@ -24,6 +24,10 @@ class MaximizeContainerPlugin(plugin.Plugin):
         root = window.get_child()
         current_selected_level = [0]
         parents = build_parents_list(terminal, root)
+        def initial_draw(widget, event):
+            draw_as_selected(terminal)
+            return(False)
+        redraw_handler_id = terminal.vte.connect_after('expose-event', initial_draw)
         def keypress_handler(widget, event):
             # Workaround for IBus intefering with broadcast when using dead keys
             # Environment also needs IBUS_DISABLE_SNOOPER=1, or double chars appear
@@ -32,6 +36,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
                 #dbg('Terminal::on_keypress: Ingore processed event with event.state %d' % event.state)
                 return(False)
             keyval_name = gtk.gdk.keyval_name(event.keyval)
+            print("keyval name: %s" % keyval_name)
             if keyval_name == 'Up':
                 if current_selected_level[0] < len(parents)-1:
                     current_selected_level[0] += 1
@@ -47,12 +52,15 @@ class MaximizeContainerPlugin(plugin.Plugin):
                 draw_as_selected(parent)
                 return(True)
             if keyval_name == 'Return':
-                self.is_selecting = False
-                redraw(root)
                 level = current_selected_level[0]
                 if level == 0 or level == len(parents) - 1:
-                    terminal.vte.disconnect(handler_id)
+                    self.is_selecting = False
+                    redraw(root)
+                    terminal.vte.disconnect(redraw_handler_id)
+                    terminal.vte.get_window().process_updates(True)
+                    terminal.vte.disconnect(keypress_handler_id)
                     return(True)
+                redraw(root)
                 parent = parents[-1-level]
                 parents_parent = parents[-2-level]
                 window.remove(root)
@@ -64,10 +72,20 @@ class MaximizeContainerPlugin(plugin.Plugin):
                 self.parents_parent = parents_parent
                 self.was_first = parents_parent.get_child1() == parent
                 self.root_to_add = root
-                terminal.vte.disconnect(handler_id)
+                self.is_selecting = False
+                terminal.vte.disconnect(redraw_handler_id)
+                terminal.vte.get_window().process_updates(True)
+                terminal.vte.disconnect(keypress_handler_id)
+                return(True)
+            if keyval_name == 'Escape':
+                self.is_selecting = False
+                redraw(root)
+                terminal.vte.disconnect(redraw_handler_id)
+                terminal.vte.get_window().process_updates(True)
+                terminal.vte.disconnect(keypress_handler_id)
                 return(True)
             return(False)
-        handler_id = terminal.vte.connect('key-press-event', keypress_handler)
+        keypress_handler_id = terminal.vte.connect('key-press-event', keypress_handler)
 
     def unmaximise(self, terminal):
         self.window.remove(self.parent_to_remove)
