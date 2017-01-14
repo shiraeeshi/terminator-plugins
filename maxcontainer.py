@@ -11,6 +11,7 @@ maker = Factory()
 class MaximizeContainerPlugin(plugin.Plugin):
     capabilities = ['terminal_menu']
 
+    is_selecting = False
     parent_to_remove = False
     root_to_add = False
     window = False
@@ -18,6 +19,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
     parents_parent = False
 
     def do_select_container(self, terminal):
+        self.is_selecting = True
         window = terminal.get_toplevel()
         root = window.get_child()
         current_selected_level = [0]
@@ -45,6 +47,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
                 draw_as_selected(parent)
                 return(True)
             if keyval_name == 'Return':
+                self.is_selecting = False
                 redraw(root)
                 level = current_selected_level[0]
                 if level == 0 or level == len(parents) - 1:
@@ -92,7 +95,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
             menuitems.append(item)
             return
         item = gtk.MenuItem('Maximize container...')
-        item.set_sensitive(not terminal.is_zoomed())
+        item.set_sensitive(not terminal.is_zoomed() and not self.is_selecting)
         item.connect('activate', lambda x: self.do_select_container(terminal))
         menuitems.append(item)
 
