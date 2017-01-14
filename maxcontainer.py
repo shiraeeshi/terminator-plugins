@@ -25,7 +25,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
         current_selected_level = [0]
         parents = build_parents_list(terminal, root)
         def draw_first_terminal(widget, event):
-            draw_as_selected(terminal)
+            draw_as_selected(parents[-1])
             return(False)
         redraw_handler_id = terminal.vte.connect_after('expose-event', draw_first_terminal)
         def keypress_handler(widget, event):
@@ -52,7 +52,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
                 return(True)
             if keyval_name == 'Return':
                 level = current_selected_level[0]
-                if level == 0 or level == len(parents) - 1:
+                if level == len(parents) - 1:
                     redraw(root)
                     self.is_selecting = False
                     terminal.vte.disconnect(redraw_handler_id)
@@ -120,7 +120,7 @@ def build_parents_list(terminal, root):
     def dfs(start, acc):
         if maker.isinstance(start, 'Terminal'):
             if start == terminal:
-                return (True, acc + [terminal])
+                return (True, acc)
             else:
                 return (False, None)
         elif maker.isinstance(start, 'Container'):
