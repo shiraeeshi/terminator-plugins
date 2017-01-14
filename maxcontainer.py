@@ -12,11 +12,11 @@ class MaximizeContainerPlugin(plugin.Plugin):
     capabilities = ['terminal_menu']
 
     is_selecting = False
-    parent_to_remove = False
+    is_maximized = False
     root_to_add = False
     window = False
     was_first = False
-    parents_parent = False
+    former_parent = False
 
     def do_select_container(self, terminal):
         self.is_selecting = True
@@ -61,20 +61,20 @@ class MaximizeContainerPlugin(plugin.Plugin):
                     return(True)
                 redraw(root)
                 parent = parents[-1-level]
-                parents_parent = parents[-2-level]
+                former_parent = parents[-2-level]
                 window.remove(root)
-                parents_parent.remove(parent)
+                former_parent.remove(parent)
                 window.add(parent)
                 terminal.grab_focus()
                 self.window = window
-                self.parent_to_remove = parent
-                self.parents_parent = parents_parent
-                self.was_first = parents_parent.get_child1() == parent
+                self.former_parent = former_parent
+                self.was_first = former_parent.get_child1() == parent
                 self.root_to_add = root
                 self.is_selecting = False
                 terminal.vte.disconnect(redraw_handler_id)
                 terminal.vte.get_window().process_updates(True)
                 window.disconnect(keypress_handler_id)
+                self.is_maximized = True
                 return(True)
             if keyval_name == 'Escape':
                 redraw(root)
@@ -87,25 +87,26 @@ class MaximizeContainerPlugin(plugin.Plugin):
         keypress_handler_id = window.connect('key-press-event', keypress_handler)
 
     def unmaximise(self, terminal):
-        self.window.remove(self.parent_to_remove)
+        unmaximized = self.window.get_children()[0]
+        self.window.remove(unmaximized)
         if self.was_first:
-            second = self.parents_parent.get_children()[0]
-            self.parents_parent.add(self.parent_to_remove)
-            self.parents_parent.add(second)
+            second = self.former_parent.get_children()[0]
+            self.former_parent.add(unmaximized)
+            self.former_parent.add(second)
         else:
-            self.parents_parent.add(self.parent_to_remove)
+            self.former_parent.add(unmaximized)
         self.window.add(self.root_to_add)
         terminal.grab_focus()
 
-        self.parent_to_remove = False
-        self.parents_parent = False
+        self.former_parent = False
         self.was_first = False
         self.root_to_add = False
         self.window = False
+        self.is_maximized = False
 
     def callback(self, menuitems, menu, terminal):
         """Add out menu item to the menu"""
-        if self.parent_to_remove:
+        if self.is_maximized:
             item = gtk.MenuItem('Unmaximize container')
             item.set_sensitive(not terminal.is_zoomed())
             item.connect('activate', lambda x: self.unmaximise(terminal))
