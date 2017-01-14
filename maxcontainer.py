@@ -112,7 +112,10 @@ class MaximizeContainerPlugin(plugin.Plugin):
             menuitems.append(item)
             return
         item = gtk.MenuItem('Maximize container...')
-        item.set_sensitive(not terminal.is_zoomed() and not self.is_selecting)
+
+        is_single = terminal.get_toplevel().get_child() == terminal
+
+        item.set_sensitive(not terminal.is_zoomed() and not self.is_selecting and not is_single)
         item.connect('activate', lambda x: self.do_select_container(terminal))
         menuitems.append(item)
 
