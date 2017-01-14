@@ -17,7 +17,6 @@ class MaximizeContainerPlugin(plugin.Plugin):
     window = False
     was_first = False
     former_parent = False
-    closeterm_handler_id = False
 
     def do_select_container(self, terminal):
         self.is_selecting = True
@@ -141,10 +140,8 @@ def collect_terminals(component):
     for child in children:
         if maker.isinstance(child, 'Terminal'):
             terminals.append(child)
-        elif maker.isinstance(child, 'Container'):
-            terminals += collect_terminals(child)
         else:
-            raise Error('unknown element: %s' % start)
+            terminals += collect_terminals(child)
     return terminals
 
 def build_parents_list(terminal, root):
