@@ -57,7 +57,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
                     self.is_selecting = False
                     terminal.vte.disconnect(redraw_handler_id)
                     terminal.vte.get_window().process_updates(True)
-                    terminal.vte.disconnect(keypress_handler_id)
+                    window.disconnect(keypress_handler_id)
                     return(True)
                 redraw(root)
                 parent = parents[-1-level]
@@ -74,17 +74,17 @@ class MaximizeContainerPlugin(plugin.Plugin):
                 self.is_selecting = False
                 terminal.vte.disconnect(redraw_handler_id)
                 terminal.vte.get_window().process_updates(True)
-                terminal.vte.disconnect(keypress_handler_id)
+                window.disconnect(keypress_handler_id)
                 return(True)
             if keyval_name == 'Escape':
                 redraw(root)
                 self.is_selecting = False
                 terminal.vte.disconnect(redraw_handler_id)
                 terminal.vte.get_window().process_updates(True)
-                terminal.vte.disconnect(keypress_handler_id)
+                window.disconnect(keypress_handler_id)
                 return(True)
             return(False)
-        keypress_handler_id = terminal.vte.connect('key-press-event', keypress_handler)
+        keypress_handler_id = window.connect('key-press-event', keypress_handler)
 
     def unmaximise(self, terminal):
         self.window.remove(self.parent_to_remove)
