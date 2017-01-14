@@ -17,6 +17,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
     window = False
     was_first = False
     former_parent = False
+    closeterm_handler_id = False
 
     def do_select_container(self, terminal):
         self.is_selecting = True
@@ -65,6 +66,17 @@ class MaximizeContainerPlugin(plugin.Plugin):
                 window.remove(root)
                 former_parent.remove(parent)
                 window.add(parent)
+                all_terminals = collect_terminals(parent)
+                term_count = [len(all_terminals)]
+                def close_handler(widget):
+                    term_count[0] -= 1
+                    if term_count[0] == 0:
+                        self.unmaximize(widget)
+                        return(True)
+                    else:
+                        return(False)
+                for term in all_terminals:
+                    term.connect('close-term', close_handler)
                 terminal.grab_focus()
                 self.window = window
                 self.former_parent = former_parent
@@ -86,17 +98,18 @@ class MaximizeContainerPlugin(plugin.Plugin):
             return(False)
         keypress_handler_id = window.connect('key-press-event', keypress_handler)
 
-    def unmaximise(self, terminal):
+    def unmaximize(self, terminal = None):
         unmaximized = self.window.get_children()[0]
         self.window.remove(unmaximized)
+        self.window.add(self.root_to_add)
         if self.was_first:
             second = self.former_parent.get_children()[0]
             self.former_parent.add(unmaximized)
             self.former_parent.add(second)
         else:
             self.former_parent.add(unmaximized)
-        self.window.add(self.root_to_add)
-        terminal.grab_focus()
+        if terminal:
+            terminal.grab_focus()
 
         self.former_parent = False
         self.was_first = False
@@ -109,7 +122,7 @@ class MaximizeContainerPlugin(plugin.Plugin):
         if self.is_maximized:
             item = gtk.MenuItem('Unmaximize container')
             item.set_sensitive(not terminal.is_zoomed())
-            item.connect('activate', lambda x: self.unmaximise(terminal))
+            item.connect('activate', lambda x: self.unmaximize(terminal))
             menuitems.append(item)
             return
         item = gtk.MenuItem('Maximize container...')
@@ -119,6 +132,20 @@ class MaximizeContainerPlugin(plugin.Plugin):
         item.set_sensitive(not terminal.is_zoomed() and not self.is_selecting and not is_single)
         item.connect('activate', lambda x: self.do_select_container(terminal))
         menuitems.append(item)
+
+def collect_terminals(component):
+    if not maker.isinstance(component, 'Container'):
+        raise Error('component is not a Container')
+    terminals = []
+    children = component.get_children()
+    for child in children:
+        if maker.isinstance(child, 'Terminal'):
+            terminals.append(child)
+        elif maker.isinstance(child, 'Container'):
+            terminals += collect_terminals(child)
+        else:
+            raise Error('unknown element: %s' % start)
+    return terminals
 
 def build_parents_list(terminal, root):
     def dfs(start, acc):
