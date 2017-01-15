@@ -47,8 +47,9 @@ Terminator unmaximizes the container and you see all terminals again:
 ---
 Note:
 There is a subtle difference between closing a Terminator window and closing a terminal.
-Normally, Terminator asks the user for a confirmation when he's trying to close a window that contains more than one terminal. But in maximized mode Terminator "forgets" about the hidden terminals when closing a window - it doesn't show any dialog and silently closes the window and all the terminals. (You close a window using "alt-f4" combination or pressing on cross sign on window's header.)
-When closing a maximized terminal Terminator unmaximizes it and shows the hidden terminals. (You close a terminal using "ctrl-shift-w" combination or using the "close" menu item in popup menu.)
+
+- Normally, Terminator asks the user for a confirmation when he's trying to close a window that contains more than one terminal. But in maximized mode Terminator "forgets" about the hidden terminals when closing a window - it doesn't show any dialog and silently closes the window and all the terminals. (You close a window using "alt-f4" combination or pressing on cross sign on window's header.)
+- When closing a maximized terminal Terminator unmaximizes it and shows the hidden terminals. (You close a terminal using "ctrl-shift-w" combination or using the "close" menu item in popup menu.)
 
 It means that closing a window is risky, it's possible for you to forget about the hidden terminals and accidentally close all of them, and Terminator won't ask you about them. On the other hand, closing a terminal is always safe.
 
