@@ -43,3 +43,29 @@ When you want to "unmaximize" right-click and select the "Unmaximize container" 
 Terminator unmaximizes the container and you see all terminals again:
 
 ![Unmaximized](https://github.com/shiraeeshi/terminator-plugins/raw/master/images/maxcontainer_6.png "Unmaximized")
+
+---
+Note:
+There is a subtle difference between closing a Terminator window and closing a terminal.
+Normally, Terminator asks the user for a confirmation when he's trying to close a window that contains more than one terminal. But in maximized mode Terminator "forgets" about the hidden terminals when closing a window - it doesn't show any dialog and silently closes the window and all the terminals. (You close a window using "alt-f4" combination or pressing on cross sign on window's header.)
+When closing a maximized terminal Terminator unmaximizes it and shows the hidden terminals. (You close a terminal using "ctrl-shift-w" combination or using the "close" menu item in popup menu.)
+
+It means that closing a window is risky, it's possible for you to forget about the hidden terminals and accidentally close all of them, and Terminator won't ask you about them. On the other hand, closing a terminal is always safe.
+
+The cause of this bug is in the Terminator's codebase, in window.py:
+
+```python
+
+def on_delete_event(self, window, event, data=None):
+    """Handle a window close request"""
+    maker = Factory()
+    if maker.isinstance(self.get_child(), 'Terminal'):
+        dbg('Window::on_delete_event: Only one child, closing is fine') # What about hidden terminals?
+        return(False)
+    elif maker.isinstance(self.get_child(), 'Container'):
+        return(self.confirm_close(window, _('window')))
+```
+
+So, to resume, a little advise:
+When you're closing a Terminator window, be careful and make sure that you haven't forgotten about hidden terminals.
+Or don't close the window at all, just close the terminal.
