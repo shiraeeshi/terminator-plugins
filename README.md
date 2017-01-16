@@ -1,8 +1,10 @@
 # terminator-plugins
 
-## maxcontainers - maximize containers*
+## maxcontainers - maximize containers
 
-\* Works with the gtk2-version of terminator, tested with 0.98 version.
+* gtk2-version was tested with Terminator 0.98.
+* gtk3-version was tested with Terminator 1.90.
+
 
 Terminator allows to maximize a single terminal, but what if I want to maximize more than one? This plugin does just that.
 
