@@ -72,3 +72,11 @@ def on_delete_event(self, window, event, data=None):
 So, to resume, a little advise:
 When you're closing a Terminator window, be careful and make sure that you haven't forgotten about hidden terminals.
 Or don't close the window at all, just close the terminal.
+
+### Installation
+
+from [askubuntu.com](https://askubuntu.com/questions/700015/set-path-for-terminator-to-lookup-for-plugins#:~:text=Terminator%20has%20two%20plugin%20folders,and%20an%20user%20folder%20~%2F.)
+
+Download .py file into plugins folder.
+
+Terminator has two plugin folders. The system-wide folder /usr/share/terminator/terminatorlib/plugins and an user folder ~/.config/terminator/plugins
